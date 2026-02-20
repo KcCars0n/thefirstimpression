@@ -2,37 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The First Impression</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <!-- TOP HUD -->
   <div class="hud">
     <div class="title">THE FIRST IMPRESSION</div>
+
     <div class="scorebox">
       <div class="score-label">SCORE</div>
       <div class="score" id="score">0</div>
     </div>
   </div>
 
+  <!-- GAME AREA -->
   <main class="stage">
     <div class="card">
+
+      <!-- FACE -->
       <div class="face-wrap">
-        <img id="face" alt="Face" />
+        <img id="face" alt="Person Face" />
         <div class="shine"></div>
       </div>
 
+      <!-- REVEAL PANEL (ALWAYS VISIBLE) -->
       <div class="reveal">
-        <div class="reveal-item"><span class="k">AGE</span><span class="v" id="rAge">???</span></div>
-        <div class="reveal-item"><span class="k">SALARY</span><span class="v" id="rSalary">???</span></div>
-        <div class="reveal-item"><span class="k">NAME</span><span class="v" id="rName">???</span></div>
+        <div class="reveal-item">
+          <span class="k">AGE</span>
+          <span class="v" id="rAge">???</span>
+        </div>
+
+        <div class="reveal-item">
+          <span class="k">SALARY</span>
+          <span class="v" id="rSalary">???</span>
+        </div>
+
+        <div class="reveal-item">
+          <span class="k">NAME</span>
+          <span class="v" id="rName">???</span>
+        </div>
+
+        <div class="reveal-item">
+          <span class="k">OCCUPATION</span>
+          <span class="v" id="rOcc">???</span>
+        </div>
+
+        <div class="reveal-item">
+          <span class="k">STATE</span>
+          <span class="v" id="rState">???</span>
+        </div>
       </div>
 
-      <div class="round" id="roundArea">
-        <!-- Round UI injected by script.js -->
-      </div>
+      <!-- ROUND CONTENT (script injects UI here) -->
+      <div class="round" id="roundArea"></div>
 
+      <!-- FEEDBACK TEXT -->
       <div class="feedback" id="feedback"></div>
+
     </div>
   </main>
 
