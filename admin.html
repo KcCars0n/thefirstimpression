@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - The First Impression</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="hud">
+    <div class="title">ADMIN: FACE GENERATOR</div>
+    <div class="scorebox">
+      <div class="score-label">FACES</div>
+      <div class="score" id="faceCount">—</div>
+    </div>
+  </div>
+
+  <main class="stage">
+    <div class="card">
+      <div class="round">
+        <h2>Generate faces into Vercel Blob</h2>
+
+        <div class="controls">
+          <input id="count" type="number" value="25" min="1" max="50" />
+          <button id="gen">GENERATE</button>
+          <button id="refresh">REFRESH COUNT</button>
+        </div>
+
+        <div style="opacity:.85;margin-top:10px;">
+          Tip: Click GENERATE 8 times at 25 each = ~200 faces.
+        </div>
+      </div>
+
+      <div class="feedback" id="msg"></div>
+
+      <div class="round" style="margin-top:14px;">
+        <h2>Preview (last generated)</h2>
+        <div id="preview" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+const msg = document.getElementById("msg");
+const preview = document.getElementById("preview");
+const faceCount = document.getElementById("faceCount");
+
+function setMsg(text, cls="") {
+  msg.className = "feedback " + cls;
+  msg.textContent = text;
+}
+
+async function refreshCount() {
+  setMsg("Checking face count…");
+  const r = await fetch("/api/faces/list");
+  const j = await r.json();
+  if (!j.ok) return setMsg("Error: " + j.error, "fb-wrong");
+  faceCount.textContent = j.count;
+  setMsg("Ready.", "");
+}
+
+async function generate() {
+  const n = Math.max(1, Math.min(50, parseInt(document.getElementById("count").value || "25")));
+  setMsg("Generating " + n + " faces…");
+  preview.innerHTML = "";
+
+  const r = await fetch("/api/faces/add?count=" + n);
+  const j = await r.json();
+  if (!j.ok) return setMsg("Error: " + j.error, "fb-wrong");
+
+  setMsg("Saved " + j.count + " faces ✅", "fb-correct");
+
+  // show preview
+  (j.urls || []).slice(-12).forEach(u => {
+    const img = document.createElement("img");
+    img.src = u;
+    img.style.width = "120px";
+    img.style.height = "120px";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "14px";
+    img.style.boxShadow = "0 0 16px rgba(0,245,255,.18)";
+    preview.appendChild(img);
+  });
+
+  await refreshCount();
+}
+
+document.getElementById("gen").onclick = generate;
+document.getElementById("refresh").onclick = refreshCount;
+
+refreshCount();
+</script>
+</body>
+</html>
