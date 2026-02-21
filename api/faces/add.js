@@ -4,7 +4,7 @@ export const config = { runtime: "nodejs" };
 
 function clampCount(n) {
   if (!Number.isFinite(n)) return 10;
-  return Math.max(1, Math.min(50, Math.floor(n))); // max 50 per click (prevents overload)
+  return Math.max(1, Math.min(50, Math.floor(n))); // max 50 per click
 }
 
 export default async function handler(req, res) {
@@ -12,20 +12,29 @@ export default async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const count = clampCount(Number(url.searchParams.get("count")));
 
-    const saved = [];
-    for (let i = 0; i < count; i++) {
-      const imgRes = await fetch("https://thispersondoesnotexist.com/image", {
-        headers: { "User-Agent": "Mozilla/5.0" }
-      });
+    // Ask RandomUser for `count` people
+    const peopleRes = await fetch(`https://randomuser.me/api/?results=${count}&nat=us,ca,gb,au`, {
+      headers: { "User-Agent": "Mozilla/5.0" }
+    });
 
-      if (!imgRes.ok) throw new Error(`Face fetch failed: ${imgRes.status}`);
+    if (!peopleRes.ok) throw new Error(`RandomUser fetch failed: ${peopleRes.status}`);
+    const peopleJson = await peopleRes.json();
+    const results = peopleJson.results || [];
+
+    const saved = [];
+
+    for (const p of results) {
+      // Choose large portrait (higher quality)
+      const imgUrl = p?.picture?.large;
+      if (!imgUrl) continue;
+
+      const imgRes = await fetch(imgUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
+      if (!imgRes.ok) continue;
+
       const buf = Buffer.from(await imgRes.arrayBuffer());
 
-      // simple quality gate (avoid tiny/broken images)
-      if (buf.length < 50_000) {
-        i--;
-        continue;
-      }
+      // quick quality gate
+      if (buf.length < 20_000) continue;
 
       const key = `faces/${crypto.randomUUID()}.jpg`;
       const blob = await put(key, buf, {
@@ -36,7 +45,7 @@ export default async function handler(req, res) {
       saved.push(blob.url);
     }
 
-    res.status(200).json({ ok: true, count: saved.length, urls: saved });
+    res.status(200).json({ ok: true, requested: count, count: saved.length, urls: saved });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e) });
   }
